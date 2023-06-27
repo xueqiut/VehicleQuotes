@@ -65,16 +65,14 @@ namespace VehicleQuotes.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            //catch (DbUpdateConcurrencyException)
+            catch (DbUpdateException ex)
             {
-                if (!MakeExists(id))
-                {
+                if (ex is DbUpdateConcurrencyException && !MakeExists(id)) {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+
+                return Conflict();
             }
 
             return NoContent();
@@ -85,12 +83,27 @@ namespace VehicleQuotes.Controllers
         [HttpPost]
         public async Task<ActionResult<Make>> PostMake(Make make)
         {
-          if (_context.Makes == null)
-          {
-              return Problem("Entity set 'VehicleQuotesContext.Makes'  is null.");
-          }
+            if (_context.Makes == null)
+            {
+                return Problem("Entity set 'VehicleQuotesContext.Makes'  is null.");
+            }
             _context.Makes.Add(make);
-            await _context.SaveChangesAsync();
+            
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                if (MakeExists(make.ID))
+                {
+                    return Conflict();
+                }
+                else
+                {
+                    return Problem(ex.Message);
+                }
+            }
 
             return CreatedAtAction("GetMake", new { id = make.ID }, make);
         }
