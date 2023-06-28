@@ -115,10 +115,12 @@ An index with a combination of more than one columns
 E.g. One Make can have many models, and Model does not make sense without specifying the Make. So, it does not make sense to get a model without specifiying the make.
 To reflect this in URL Schemas for models. It should not be `/api/Models/{id}`, instead, it should be `/api/Makes/{makeId}/Models/{modelId}`
 
+One controller works on a single HTTP Resource. Specify the Route at the controller level. Only specify the HTTP method, {id}, and query parameters at action level.
+
 # Using resource models as DTOs for controllers
 One side effect to have Controller works on the EF Model directly is that the API will be overly complicated. Because the resouce may reference other models and being referenced.
 
-The POST API will look like below if the controller works with EF Model directly. It contains a lot if duplicated filds for foreigh and primay keys, and unnecessary object following the model structure. The only meaningful fields are limited.
+The POST API will look like below if the controller works with EF Model directly. It contains a lot of duplicated filds for foreigh and primay keys, and unnecessary nested object following the model structure.
 ```
 {
   "id": 0,
@@ -154,7 +156,10 @@ The POST API will look like below if the controller works with EF Model directly
     }
   ]
 }
+```
 
+The solution is to create a Resource Model (or DTO, Data Transfer Object, or View Model), which contains only the meaningful fields. However, the controller will need to translate the fields into object.
+```
 # meaningful fields
 {
   "name": "string",
@@ -169,7 +174,6 @@ The POST API will look like below if the controller works with EF Model directly
   ]
 }
 ```
-The solution is to create a Resource Model (or DTO, Data Transfer Object, or View Model), which contains only the meaningful fields. However, the controller will need to translate the fields into object.
 
 The only purpose of DTO is to streamline the API contract of the endpoint by defining a set of fields that clients will use to make requests and interpret responses. It’s simpler than the actual database structure, but still captures all the information that’s important for the application. 
 
@@ -184,7 +188,7 @@ Two default files
 - appsettings.Development.json: applied only under development environments
 Create more environment config if needed
 
-The Environment is given by ASPNETCORE_ENVIRONMENT environment variable. It can be set as
+The Environment is given by *ASPNETCORE_ENVIRONMENT* environment variable. It can be set as
 - Development
 - Staging
 - Production: the default value
